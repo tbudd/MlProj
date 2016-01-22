@@ -10,6 +10,9 @@ output: html_document
 ```{r}
 library(caret)
 library(YaleToolkit)
+library(rpart.plot)
+library(randomForest)
+library(e1071)
 
 testing<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"))
 training<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"))
