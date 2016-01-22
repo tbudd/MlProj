@@ -9,9 +9,15 @@ output: html_document
 
 ```{r}
 library(caret)
+library(YaleToolkit)
 
-testing<-read.csv("pml-testing.csv")
-training<-read.csv("pml-training.csv")
+testing<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"))
+training<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"))
+
+trn2<-training[,-nearZeroVar(training)]
+trn3<-trn2[,whatis(trn2)$missing<1000]
+summary(training)
+str(training)
 ```
 
 You can also embed plots, for example:
