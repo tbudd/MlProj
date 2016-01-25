@@ -13,14 +13,50 @@ library(YaleToolkit)
 library(rpart.plot)
 library(randomForest)
 library(e1071)
+library(parallel)
+library(doParallel)
 
-testing<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"))
+## code to download the data for reproducibility
+validate<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"))
 training<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"))
 
-trn2<-training[,-nearZeroVar(training)]
-trn3<-trn2[,whatis(trn2)$missing<1000]
-summary(training)
-str(training)
+trn1<-training[,-1] ## remove row id column
+val1<-validate[,-1] ## remove row id column
+
+## remove cols with many (19216) missing values
+keep<-whatis(trn1)$missing<1000
+trn2<-trn1[,keep] 
+val2<-val1[,keep]
+
+## remove cols with near zero variance
+nzv<-nearZeroVar(trn2)
+trn3<-trn2[,-nzv]
+val3<-val2[,-nzv]
+
+cluster <- makeCluster(detectCores() - 1) # convention to leave 1 core for OS
+registerDoParallel(cluster)
+
+set.seed(776655) ## use set.seed for reproducibility
+
+## Use ten-factor crossvalidation
+fitControl <- trainControl(method="cv", number=10, allowParallel = TRUE) # define training control
+
+# train the model 
+fit3 <- train(classe~., data=trn3, trControl=fitControl, method="rf")
+
+## evaluate the suitability of this model, including accuracy and a confusion matrix that is based on comparing the modeled data to the held out folds.
+fit3
+fit3$resample
+confusionMatrix.train(fit3)
+
+# make predictions
+predictions <- predict(fit3, val3[,1:57])
+
+
+stopCluster(cluster) ## deregister parallel processing cluster
+
+## summary(training)
+## str(training)
 ```
 
 You can also embed plots, for example:
@@ -29,4 +65,3 @@ You can also embed plots, for example:
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
