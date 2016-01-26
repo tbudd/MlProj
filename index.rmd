@@ -21,19 +21,19 @@ The classification (column classe) of curl performance is:
 
 We use the random forest classifier to train a model to predict classe from 58 variables, pared down from the original 159 variables as described in the Preprocessing section below.
 
-The random forest classifier was chosen, because it has many advantages compared with other algorithms. For the purposes of this project the most important advantages are:
+The random forest classifier was chosen because it has many advantages compared with other algorithms. For the purposes of this project the most important advantages are:
 
-* It is one of the most accurate learning algoritms available. (The final model had an accuracy of .999, giving an out of sample error of .001.)
+* It is one of the most accurate learning algoritms available (the final model had an accuracy of .9996, giving an out-of-sample error of .0004)
 
 * It can handle thousands of input variables (there are more than 100 variables in the dataset)
 
 * It does not require data preprocessing (no need for scaling or data transformations)
 
-* Resistant to outliers
+* It is resistant to outliers
 
 We used 10-fold cross-validation to partition the training dataset. 
 
-From [wikipedia](https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29):
+From [Wikipedia](https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29):
 
 > The advantage of this method [k-fold cross-validation] over repeated random sub-sampling [...] is that all observations are used for both training and validation, and each observation is used for validation exactly once.
 
@@ -41,9 +41,7 @@ From [wikipedia](https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29
 ```{r}
 library(caret)
 library(YaleToolkit)
-library(rpart.plot)
 library(randomForest)
-library(e1071)
 ```
 
 ##Download Data Reproducibly
@@ -71,11 +69,11 @@ val3<-val2[,-nzv]
 ```
 
 ##Train the Model
-Use 10-factor cross-validation and the random forest classification method.
-```{r eval= FALSE}
+Use 10-fold cross-validation and the random forest classification method.
+```{r}
 set.seed(776655) ## use set.seed for **reproducibility**
 
-## Use ten-factor cross-validation
+## Use ten-fold cross-validation
 fitControl <- trainControl(method="cv", number=10, allowParallel = TRUE) # define training control
 
 # train the model using the random forest classification method
@@ -85,13 +83,17 @@ save(fit3,file="fit3f10.rda") ## save model in case we do get a valid run, becau
 
 ##Results
 ```{r}
-load("fit3.rda") #### remove this from the final paper
 ## evaluate the suitability of this model, including accuracy and a confusion matrix that is based on comparing the modeled data to the held out folds.
 fit3$resample
-mean(fit3$resample$Accuracy) ## mean of the accuracy of all the folds
+accuracy<-mean(fit3$resample$Accuracy) ## mean of the accuracy of all the folds
+oob<-1-accuracy ## out of sample error
+
+## Display results
 confusionMatrix.train(fit3)
+accuracy
+oob
 
 ## Use the model to make predictions on the validation dataset.
 predict(fit3, val3[,1:57])
 ```
-The predicted accuracy of the model is .999, giving an out of of sample error of .001. The predictions from this model were 100% accurate on the validation dataset consisting of 20 observations.
+The predicted accuracy of the model is .9996, giving an out-of-sample error of .0004. The predictions from this model were 100% accurate on the validation dataset consisting of 20 observations.
