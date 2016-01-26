@@ -16,7 +16,7 @@ library(e1071)
 library(parallel)
 library(doParallel)
 
-## code to download the data for reproducibility
+## code to download the data for **reproducibility**
 validate<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"))
 training<-read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"))
 
@@ -36,18 +36,26 @@ val3<-val2[,-nzv]
 cluster <- makeCluster(detectCores() - 1) # convention to leave 1 core for OS
 registerDoParallel(cluster)
 
-set.seed(776655) ## use set.seed for reproducibility
+set.seed(776655) ## use set.seed for **reproducibility**
 
 ## Use ten-factor crossvalidation
 fitControl <- trainControl(method="cv", number=10, allowParallel = TRUE) # define training control
 
 # train the model 
 fit3 <- train(classe~., data=trn3, trControl=fitControl, method="rf")
+Sys.time()
+
+## save this model
+save(fit3, file = "fit3_10.rda")
 
 ## evaluate the suitability of this model, including accuracy and a confusion matrix that is based on comparing the modeled data to the held out folds.
 fit3
 fit3$resample
 confusionMatrix.train(fit3)
+
+
+
+load("fit3.rda")
 
 # make predictions
 predictions <- predict(fit3, val3[,1:57])
